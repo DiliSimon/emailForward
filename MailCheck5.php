@@ -20,12 +20,10 @@ function check_mail()
 
     /* try to connect */
     $inbox = imap_open($hostname, $username, $password) or die('Cannot connect to Gmail: ' . imap_last_error());
-
-    $emails = imap_search($inbox, 'UNSEEN'); // TODO: Check if UNSEEN is working.
+    $emails = imap_search($inbox, 'UNSEEN');
 
     /* if any emails found, iterate through each email */
     if ($emails) {
-        echo 'mails found';
         $count = 1;
 
         /* put the newest emails on top */
@@ -33,15 +31,17 @@ function check_mail()
 
         /* for every email... */
         foreach ($emails as $email_number) {
+            $has_attachment = false;
             $log = fopen('log.txt','w');
             $recipients = array();
             /* get information specific to this email */
             $overview = imap_fetch_overview($inbox, $email_number, 0);
             $subject = $overview[0]->subject;
+            echo $subject;
             fwrite($log, $subject);
 
-            $message = imap_fetchbody($inbox, $email_number, 2);
-            $message = base64_decode($message);
+            $message = '';
+
             fwrite($log, $message);
 
             /* get mail structure */
@@ -64,7 +64,7 @@ function check_mail()
                             if (strtolower($object->attribute) == 'filename') {
                                 $attachments[$i]['is_attachment'] = true;
                                 $attachments[$i]['filename'] = $object->value;
-                                echo $attachments[$i]['filename'];
+                                //echo $attachments[$i]['filename'];
                             }
                         }
                     }
@@ -74,7 +74,7 @@ function check_mail()
                             if (strtolower($object->attribute) == 'name') {
                                 $attachments[$i]['is_attachment'] = true;
                                 $attachments[$i]['name'] = $object->value;
-                                echo $attachments[$i]['name'];
+                                //echo $attachments[$i]['name'];
                             }
                         }
                     }
@@ -95,6 +95,10 @@ function check_mail()
             $attachment_paths = array();
             /* iterate through each attachment and save it */
             foreach ($attachments as $attachment) {
+                if($attachment['is_attachment']) {
+                    $message = imap_fetchbody($inbox, $email_number, '1.2');
+                    $has_attachment = true;
+                }
                 if ($attachment['is_attachment'] == 1) {
                     $filename = $attachment['name'];
                     if (empty($filename)) $filename = $attachment['filename'];
@@ -110,19 +114,26 @@ function check_mail()
                     array_push($attachment_paths, "./" . $folder . "/" . $email_number . "-" . $filename);
                 }
             }
+            if(!$has_attachment){
+                $message = imap_fetchbody($inbox, $email_number, '2');
+            }
+            echo $message;
             array_push($recipients, 'gtingwen@outlook.com');//TODO: Add recipients;
-            // send_mail($recipients, $subject, $message, $attachment_paths);
+            //send_mail($recipients, $subject, $message, $attachment_paths);
+            fclose($log);
         }
+        return true;
     }
 
     /* close the connection */
     imap_close($inbox);
-    fclose($log);
 }
 
 while(True){
-    check_mail();
-    sleep(5);
+    if (check_mail()){
+        break;
+    }
+    sleep(3);
 }
 
 ?>

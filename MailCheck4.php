@@ -21,7 +21,7 @@ function check_mail()
     /* try to connect */
     $inbox = imap_open($hostname, $username, $password) or die('Cannot connect to Gmail: ' . imap_last_error());
 
-    $emails = imap_search($inbox, 'UNSEEN'); // TODO: Check if UNSEEN is working.
+    $emails = imap_search($inbox, 'UNSEEN');
 
     /* if any emails found, iterate through each email */
     if ($emails) {
@@ -40,8 +40,7 @@ function check_mail()
             $subject = $overview[0]->subject;
             fwrite($log, $subject);
 
-            $message = imap_fetchbody($inbox, $email_number, 2);
-            $message = base64_decode($message);
+            $message = imap_fetchbody($inbox, $email_number, 1);
             fwrite($log, $message);
 
             /* get mail structure */
@@ -112,17 +111,20 @@ function check_mail()
             }
             array_push($recipients, 'gtingwen@outlook.com');//TODO: Add recipients;
             // send_mail($recipients, $subject, $message, $attachment_paths);
+            fclose($log);
         }
+        return true;
     }
 
     /* close the connection */
     imap_close($inbox);
-    fclose($log);
 }
 
 while(True){
-    check_mail();
-    sleep(5);
+    if (check_mail()){
+        break;
+    }
+    sleep(3);
 }
 
 ?>
