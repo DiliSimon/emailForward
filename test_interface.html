@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Test Site</title>
+</head>
+<body onload="only_showHint()">
+
+<script>
+    function only_showHint()
+    {
+        var xmlhttp;
+        if (window.XMLHttpRequest)
+        {
+            // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+            xmlhttp=new XMLHttpRequest();
+        }
+        else
+        {
+            // IE6, IE5 浏览器执行代码
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.onreadystatechange=function()
+        {
+            if (xmlhttp.readyState==4 && xmlhttp.status==200)
+            {
+                document.getElementById("txtHint").innerHTML=xmlhttp.responseText;
+            }
+        }
+        xmlhttp.open("GET","check_email.php?q="+"no",true);
+        xmlhttp.send();
+    }
+
+    function get_addresses() {
+        var x = document.getElementById("frm1").elements[0].value;
+        var xmlhttp;
+        if (window.XMLHttpRequest)
+        {
+            // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+            xmlhttp=new XMLHttpRequest();
+        }
+        else
+        {
+            // IE6, IE5 浏览器执行代码
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.onreadystatechange=function()
+        {
+            if (xmlhttp.readyState==4 && xmlhttp.status==200)
+            {
+                document.getElementById("txtHint").innerHTML=xmlhttp.responseText;
+            }
+        }
+        xmlhttp.open("GET","check_email.php?q=" + "yes" + "addresses=" + x,true);
+        xmlhttp.send();
+    }
+</script>
+<form id="frm1" action="/action_page.php">
+    Target Email Addresses: <input type="text" name="address" value="example@email.com"><br>
+</form>
+<button onclick="get_addresses()">submit</button>
+<p id="add"></p>
+</body>
+</html>
